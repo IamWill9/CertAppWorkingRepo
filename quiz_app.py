@@ -20,6 +20,8 @@ def load_questions(file_path):
 # --- Persistent Memory for Asked Questions ---
 QUESTION_MEMORY_FILE = "asked_questions.json"
 
+WRONG_QUESTIONS_FILE = "wrong_questions.json"
+
 def load_asked_questions():
     if os.path.exists(QUESTION_MEMORY_FILE):
         with open(QUESTION_MEMORY_FILE, "r", encoding="utf-8") as f:
@@ -33,6 +35,20 @@ def save_asked_questions(questions):
 def reset_question_memory():
     if os.path.exists(QUESTION_MEMORY_FILE):
         os.remove(QUESTION_MEMORY_FILE)
+
+def load_wrong_questions():
+    if os.path.exists(WRONG_QUESTIONS_FILE):
+        with open(WRONG_QUESTIONS_FILE, "r", encoding="utf-8") as f:
+            return json.load(f)
+    return []
+
+def save_wrong_questions(questions):
+    with open(WRONG_QUESTIONS_FILE, "w", encoding="utf-8") as f:
+        json.dump(questions, f, ensure_ascii=False, indent=2)
+
+def reset_wrong_questions():
+    if os.path.exists(WRONG_QUESTIONS_FILE):
+        os.remove(WRONG_QUESTIONS_FILE)
 
 # --- Global Quiz State ---
 questions_asked = []
@@ -72,6 +88,11 @@ def mark_question_correct(question_data):
     if question_data not in question_memory:
         question_memory.append(question_data)
         save_asked_questions(question_memory)
+
+    wrong_qs = load_wrong_questions()
+    if question_data in wrong_qs:
+        wrong_qs.remove(question_data)
+        save_wrong_questions(wrong_qs)
 
 
 def close_program():
@@ -180,6 +201,10 @@ def ask_multiple_choice(question_data, question_number):
             mark_question_correct(question_data)
         else:
             result = f"Wrong! Correct answer: {', '.join(correct)}\nExplanation: {explanation}"
+            wrong_qs = load_wrong_questions()
+            if question_data not in wrong_qs:
+                wrong_qs.append(question_data)
+                save_wrong_questions(wrong_qs)
         show_result(win, result)
 
     tk.Button(frame, text="Submit", command=submit).pack(pady=10)
@@ -234,6 +259,10 @@ def ask_drag_and_drop(question_data, question_number):
             mark_question_correct(question_data)
         else:
             result = f"Wrong!\nCorrect sequence: {', '.join(expected)}\nExplanation: {explanation}"
+            wrong_qs = load_wrong_questions()
+            if question_data not in wrong_qs:
+                wrong_qs.append(question_data)
+                save_wrong_questions(wrong_qs)
         show_result(win, result)
 
     tk.Button(frame, text="Submit", command=submit).pack(pady=10)
@@ -327,11 +356,19 @@ def run_quiz(question_count, topics):
     else:
         question_memory = load_asked_questions()
 
+    if messagebox.askyesno("Reset Missed", "Do you want to reset the previously missed questions?"):
+        reset_wrong_questions()
+        wrong_questions = []
+    else:
+        wrong_questions = load_wrong_questions()
+
     all_questions = sum(topics.values(), [])
-    remaining_questions = [q for q in all_questions if q not in question_memory]
+    wrong_questions = [q for q in wrong_questions if q in all_questions]
+    remaining_questions = [q for q in all_questions if q not in question_memory and q not in wrong_questions]
     random.shuffle(remaining_questions)
-    count = min(question_count, len(remaining_questions))
-    question_queue = remaining_questions[:count]
+    combined = wrong_questions + remaining_questions
+    count = min(question_count, len(combined))
+    question_queue = combined[:count]
     questions_asked[:] = question_queue[:]
     ask_question()
 

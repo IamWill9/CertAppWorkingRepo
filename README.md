@@ -13,6 +13,7 @@ This is a graphical quiz application designed to help users study and practice f
 - 🎨 Image rendering within questions using `matplotlib` and `PIL`.
 - 🗓️ Records score history with dates and displays it after each quiz.
 - 🌙 Optional dark mode via the `--dark` launch flag.
+- 🔁 Missed questions are stored and asked first on the next quiz.
 
 ## Prerequisites
 
@@ -36,6 +37,7 @@ Questions are loaded from the specified JSON file. Images should remain in the `
 - `main.py` — Launcher script that loads a question file.
 - `questions/` — Folder containing JSON question sets.
 - `asked_questions.json` — Memory of previously asked questions.
+- `wrong_questions.json` — List of questions you previously missed.
 - `Images/` — Folder containing result and question-related images
 
 ## License
