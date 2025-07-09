@@ -1,7 +1,9 @@
 import os
 import json
 import random
+import re
 import tkinter as tk
+import webbrowser
 from tkinter import messagebox
 from tkinter import font as tkfont
 
@@ -277,6 +279,19 @@ def show_result(parent, message):
 
     result_text = tk.Text(result_win, wrap="word", height=10, borderwidth=0, relief="flat", bg=result_win.cget("bg"))
     result_text.insert("1.0", message)
+
+    # Detect URLs and make them clickable
+    url_regex = re.compile(r"https?://\S+")
+    for match in url_regex.finditer(message):
+        start, end = match.span()
+        start_idx = f"1.0+{start}c"
+        end_idx = f"1.0+{end}c"
+        tag = f"link{start}"
+        url = match.group()
+        result_text.tag_add(tag, start_idx, end_idx)
+        result_text.tag_config(tag, foreground="blue", underline=1)
+        result_text.tag_bind(tag, "<Button-1>", lambda e, url=url: webbrowser.open_new(url))
+
     result_text.config(state="disabled", cursor="arrow")
     result_text.pack(padx=20, pady=10, fill="both", expand=True)
 
