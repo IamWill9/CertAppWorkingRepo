@@ -14,6 +14,7 @@ This is a graphical quiz application designed to help users study and practice f
 - 🗓️ Records score history with dates and displays it after each quiz.
 - 🌙 Optional dark mode via the `--dark` launch flag.
 - 🔁 Missed questions are stored and asked first on the next quiz.
+- 🔗 Clickable reference links in explanations.
 
 ## Prerequisites
 
